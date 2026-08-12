@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "5 * * * *"
   workflow_dispatch:
+    inputs:
+      test_telegram:
+        description: "Enviar mensaje de prueba a Telegram"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   analizar:
@@ -24,6 +30,13 @@ jobs:
 
       - name: Correr analisis
         run: python run_once.py
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+      - name: Mensaje de prueba a Telegram
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.test_telegram == 'true'
+        run: python -c "from notify import send_telegram; print('Enviado:', send_telegram('Prueba de conexion desde GitHub Actions (nube).'))"
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
