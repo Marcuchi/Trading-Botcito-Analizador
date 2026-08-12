@@ -47,6 +47,7 @@ CONFIG = dict(
     sleep_poll=30,
     telegram_from="Gris",           # estado de origen que dispara la alerta
     telegram_to=("Verde", "Rojo"),  # estados de destino que disparan la alerta
+    telegram_every_run=True,  # enviar el informe completo en cada ejecucion
 )
 
 # ------- Colores ANSI -------
@@ -315,6 +316,10 @@ def run_analysis():
     ref = live if not CONFIG["eval_live"] else closed.iloc[-1]
     report(ref, live, up, lo, state, spot=spot)
     alert_on_transition(state, live, up, lo, spot=spot)
+    if CONFIG["telegram_every_run"]:
+        msg = build_alert_message(state, live, up, lo, spot=spot)
+        if send_telegram(msg):
+            print("[TELEGRAM] Informe periodico enviado")
     return state
 
 

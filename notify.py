@@ -32,21 +32,25 @@ def _load_env():
 
 
 def send_telegram(message):
-    """Envia un mensaje de texto al chat configurado. Retorna True si fue enviado."""
+    """Envia un mensaje de texto a uno o varios chats. Retorna True si todos se enviaron.
+    TELEGRAM_CHAT_ID acepta varios ids separados por coma o punto y coma."""
     _load_env()
     token = os.getenv("TELEGRAM_TOKEN", "").strip()
-    chat_id = os.getenv("TELEGRAM_CHAT_ID", "").strip()
-    if not token or not chat_id:
+    raw = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+    chat_ids = [x.strip() for x in raw.replace(";", ",").split(",") if x.strip()]
+    if not token or not chat_ids:
         print("[TELEGRAM] Faltan TELEGRAM_TOKEN y TELEGRAM_CHAT_ID (variables o .env).")
         return False
-    try:
-        resp = requests.post(
-            TELEGRAM_API.format(token=token),
-            json={"chat_id": chat_id, "text": message},
-            timeout=15,
-        )
-        resp.raise_for_status()
-        return True
-    except Exception as e:
-        print(f"[TELEGRAM] Error enviando: {type(e).__name__}: {e}")
-        return False
+    ok = True
+    for chat_id in chat_ids:
+        try:
+            resp = requests.post(
+                TELEGRAM_API.format(token=token),
+                json={"chat_id": chat_id, "text": message},
+                timeout=15,
+            )
+            resp.raise_for_status()
+        except Exception as e:
+            ok = False
+            print(f"[TELEGRAM] Error enviando a {chat_id}: {type(e).__name__}: {e}")
+    return ok
