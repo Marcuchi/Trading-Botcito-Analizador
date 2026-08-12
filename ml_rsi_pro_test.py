@@ -1,5 +1,5 @@
 """
-Script de PRUEBA: cadencia de 1 minuto para validar la pipeline ML RSI Pro
+Script de PRUEBA: cadencia de 1 minuto para validar la pipeline ML RSI [BQ]
 sin esperar 58 min. Reutiliza toda la logica de ml_rsi_pro.py.
 
 Uso:
@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from ml_rsi_pro import CONFIG, run_analysis, CYAN, RESET  # noqa: E402
 
-TEST = dict(CONFIG, sleep_after=10, sleep_retry=10, sleep_poll=1)
+TEST = dict(CONFIG, sleep_after=15, sleep_retry=15, sleep_poll=1)
 
 
 def test_engine():
@@ -31,7 +31,7 @@ def test_engine():
                 print(f"{CYAN}[RUN]{RESET} {now:%Y-%m-%d %H:%M:%S} | Analizando...")
                 run_analysis()
                 done = key
-                print(f"[INFO] Ok. Durmiendo ~50s\n")
+                print(f"[INFO] Ok. Durmiendo ~15s\n")
                 time.sleep(TEST["sleep_after"])
             else:
                 time.sleep(TEST["sleep_poll"])

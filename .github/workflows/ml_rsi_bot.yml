@@ -1,4 +1,4 @@
-name: ML RSI Pro - Analisis horario
+name: ML RSI [BQ] - Analisis horario
 
 on:
   schedule:
