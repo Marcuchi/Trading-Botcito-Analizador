@@ -158,8 +158,10 @@ def _ma(series, length, ma_type, alma_sigma=1.0):
         s = length / alma_sigma
         weights = np.exp(-((np.arange(length) - m) ** 2) / (2 * s * s))
         weights /= weights.sum()
+        # ta.alma de Pine: sum += series[windowsize - i - 1] * w[i], o sea w[0]
+        # (el mayor) se aplica al valor MAS ANTIGUO y w[n-1] al actual.
         def alma(x):
-            return float(np.dot(weights, x[::-1]))
+            return float(np.dot(weights, x))
         return series.rolling(length).apply(alma, raw=True)
     if ma_type == "T3":
         v = 0.7  # el Pine usa 0.7 fijo
