@@ -26,5 +26,7 @@ if [ $(( NOW - LAST_HB )) -gt 2160000 ]; then
     echo "[PERSIST] Heartbeat escrito."
 fi
 
-git push -q
+git pull --rebase origin main || { git rebase --abort 2>/dev/null; echo "[PERSIST] Conflicto al integrar cambios remotos; se omite."; }
+
+git push -q || { echo "[PERSIST] Push rechazado por cambios remotos; se reintenta en la proxima corrida."; }
 echo "[PERSIST] Repositorio sincronizado."
