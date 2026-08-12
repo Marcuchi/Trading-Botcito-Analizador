@@ -1,0 +1,7 @@
+ccxt>=4.0.0
+pandas>=2.0.0
+numpy>=1.24.0
+requests>=2.31.0
+# pandas_ta es la libreria principal para RSI/EMA, pero exige Python <3.14 y numpy<2.
+# El script usa un fallback nativo identico si no puede instalarse.
+# En servidores con Python 3.10-3.13:  pip install pandas_ta
