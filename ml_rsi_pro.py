@@ -47,7 +47,7 @@ CONFIG = dict(
     sleep_poll=30,
     telegram_from=None,             # None = alertar ante CUALQUIER transicion de estado
     telegram_to=("Verde", "Gris", "Rojo"),  # estados de destino que disparan la alerta
-    telegram_every_run=True,  # enviar el informe completo en cada ejecucion
+    telegram_every_run=True,  # enviar el informe solo cuando la señal cambia de color
 )
 
 # ------- Colores ANSI -------
@@ -281,10 +281,8 @@ def build_alert_message(state, row, up, lo, header=None, spot=None):
     )
 
 
-def alert_on_transition(state, row, up, lo, spot=None):
-    """Notifica por Telegram ante cualquier cambio de estado (o filtrado por config)."""
-    prev = load_state()
-    save_state(state)
+def alert_on_transition(state, row, up, lo, prev=None, spot=None):
+    """Notifica por Telegram ante un cambio de color de la señal (o filtrado por config)."""
     if prev is None or prev == state:
         return
     if CONFIG["telegram_from"] is not None and prev != CONFIG["telegram_from"]:
@@ -319,11 +317,15 @@ def run_analysis():
     state = classify(live["smooth"], up, lo)
     ref = live if not CONFIG["eval_live"] else closed.iloc[-1]
     report(ref, live, up, lo, state, spot=spot)
-    alert_on_transition(state, live, up, lo, spot=spot)
-    if CONFIG["telegram_every_run"]:
-        msg = build_alert_message(state, live, up, lo, spot=spot)
-        if send_telegram(msg):
-            print("[TELEGRAM] Informe periodico enviado")
+    prev = load_state()
+    save_state(state)
+    changed = prev is not None and prev != state
+    if changed:
+        alert_on_transition(state, live, up, lo, prev=prev, spot=spot)
+        if CONFIG["telegram_every_run"]:
+            msg = build_alert_message(state, live, up, lo, spot=spot)
+            if send_telegram(msg):
+                print("[TELEGRAM] Informe por cambio de señal enviado")
     return state
 
 
