@@ -1,0 +1,1 @@
+# Trading-Botcito-Analizador
