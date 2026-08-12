@@ -6,9 +6,9 @@ import sys
 import time
 from datetime import datetime
 
-import ccxt
 import numpy as np
 import pandas as pd
+import requests
 
 from notify import send_telegram
 
@@ -42,43 +42,35 @@ CONFIG = dict(
 # ------- Colores ANSI -------
 GREEN, RED, GRAY, CYAN, RESET = "\033[92m", "\033[91m", "\033[90m", "\033[96m", "\033[0m"
 
-STEP_MS = 3600 * 1000  # 1h en ms
-
 
 # ---------- Extraccion (paginada, Binance limita a 1000/req) ----------
-BINANCE_HOSTS = [
-    "api.binance.com",
-    "data-api.binance.vision",  # endpoint de mercado publico, no bloquea por region
-]
-
-
-def _exchange():
-    for host in BINANCE_HOSTS:
-        try:
-            ex = ccxt.binance({"enableRateLimit": True, "timeout": 30000,
-                               "hostname": host, "options": {"defaultType": "spot"}})
-            ex.load_markets()
-            return ex, host
-        except Exception as e:
-            print(f"[WARN] Binance {host} no disponible: {type(e).__name__}: {e}")
-    raise RuntimeError("Ningun host de Binance respondio.")
+KLINE_API = "https://data-api.binance.vision/api/v3/klines"
 
 
 def fetch_ohlcv():
-    """Descarga paginada de las ultimas `fetch_limit` velas (warm-up completo)."""
-    ex, _ = _exchange()
-    since = ex.milliseconds() - CONFIG["fetch_limit"] * STEP_MS
-    rows = []
+    """Descarga paginada de las ultimas `fetch_limit` velas desde el endpoint de
+    mercado publico de Binance (sin bloqueo por region, a diferencia de ccxt)."""
+    symbol = CONFIG["symbol"].replace("/", "")
+    params = {"symbol": symbol, "interval": CONFIG["timeframe"], "limit": CONFIG["page"]}
+    rows, end_time = [], None
     while len(rows) < CONFIG["fetch_limit"]:
-        batch = ex.fetch_ohlcv(CONFIG["symbol"], CONFIG["timeframe"],
-                               since=since, limit=CONFIG["page"])
+        p = dict(params)
+        if end_time is not None:
+            p["endTime"] = end_time
+        resp = requests.get(KLINE_API, params=p, timeout=30)
+        resp.raise_for_status()
+        batch = resp.json()
         if not batch:
             break
-        rows.extend(batch)
-        since = batch[-1][0] + 1
+        rows[:0] = [k[:6] for k in batch]
+        end_time = batch[0][0] - 1
+        if len(batch) < CONFIG["page"]:
+            break
     rows = rows[-CONFIG["fetch_limit"]:]
     df = pd.DataFrame(rows, columns=["t", "o", "h", "l", "c", "v"])
     df["t"] = pd.to_datetime(df["t"], unit="ms", utc=True)
+    for col in ("o", "h", "l", "c", "v"):
+        df[col] = df[col].astype(float)
     return df
 
 
