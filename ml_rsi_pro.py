@@ -177,20 +177,27 @@ def report(row_closed, row_live, up, lo, state):
     print(bar)
 
 
-def alert_on_transition(state, row):
+def build_alert_message(state, row, up, lo, header=None):
+    """Arma el texto del mensaje con los datos del analisis."""
+    head = f"{header}\n" if header else ""
+    return (
+        f"{head}ML RSI Pro | {CONFIG['symbol']} | {CONFIG['timeframe']}\n"
+        f"Señal: {state.upper()}\n"
+        f"Barra: {row['t']:%Y-%m-%d %H:%M UTC}\n"
+        f"Precio: {row['c']:,.2f} USDT\n"
+        f"RSI suavizado: {row['smooth']:.2f}\n"
+        f"Limite superior: {up:.2f}\n"
+        f"Limite inferior: {lo:.2f}"
+    )
+
+
+def alert_on_transition(state, row, up, lo):
     """Notifica por Telegram al pasar de CONFIG['telegram_from'] a CONFIG['telegram_to']."""
     prev = load_state()
     save_state(state)
     if state not in CONFIG["telegram_to"] or prev != CONFIG["telegram_from"]:
         return
-    msg = (
-        f"ML RSI Pro | {CONFIG['symbol']} | {CONFIG['timeframe']}\n"
-        f"Señal: {state.upper()}\n"
-        f"Transicion: {prev} -> {state}\n"
-        f"Barra: {row['t']:%Y-%m-%d %H:%M UTC}\n"
-        f"Precio: {row['c']:,.2f} USDT\n"
-        f"RSI suavizado: {row['smooth']:.2f}"
-    )
+    msg = f"{build_alert_message(state, row, up, lo)}\nTransicion: {prev} -> {state}"
     if send_telegram(msg):
         print(f"[TELEGRAM] Alerta enviada: {prev} -> {state}")
 
@@ -208,7 +215,7 @@ def run_analysis():
     state = classify(live["smooth"], up, lo)
     ref = live if not CONFIG["eval_live"] else closed.iloc[-1]
     report(ref, live, up, lo, state)
-    alert_on_transition(state, live)
+    alert_on_transition(state, live, up, lo)
     return state
 
 
