@@ -45,8 +45,8 @@ CONFIG = dict(
     sleep_after=3480,
     sleep_retry=60,
     sleep_poll=30,
-    telegram_from="Gris",           # estado de origen que dispara la alerta
-    telegram_to=("Verde", "Rojo"),  # estados de destino que disparan la alerta
+    telegram_from=None,             # None = alertar ante CUALQUIER transicion de estado
+    telegram_to=("Verde", "Gris", "Rojo"),  # estados de destino que disparan la alerta
     telegram_every_run=True,  # enviar el informe completo en cada ejecucion
 )
 
@@ -282,14 +282,18 @@ def build_alert_message(state, row, up, lo, header=None, spot=None):
 
 
 def alert_on_transition(state, row, up, lo, spot=None):
-    """Notifica por Telegram al pasar de CONFIG['telegram_from'] a CONFIG['telegram_to']."""
+    """Notifica por Telegram ante cualquier cambio de estado (o filtrado por config)."""
     prev = load_state()
     save_state(state)
-    if state not in CONFIG["telegram_to"] or prev != CONFIG["telegram_from"]:
+    if prev is None or prev == state:
+        return
+    if CONFIG["telegram_from"] is not None and prev != CONFIG["telegram_from"]:
+        return
+    if state not in CONFIG["telegram_to"]:
         return
     msg = f"{build_alert_message(state, row, up, lo, spot=spot)}\nTransicion: {prev} -> {state}"
     if send_telegram(msg):
-        print(f"[TELEGRAM] Alerta enviada: {prev} -> {state}")
+        print(f"[TELEGRAM] Alerta de transicion enviada: {prev} -> {state}")
 
 
 # ---------- Orquestacion ----------
