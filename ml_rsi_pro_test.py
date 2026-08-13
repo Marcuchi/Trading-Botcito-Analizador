@@ -1,6 +1,6 @@
 """
-Script de PRUEBA: cadencia de 1 minuto para validar la pipeline ML RSI [BQ]
-sin esperar 58 min. Reutiliza toda la logica de ml_rsi_pro.py.
+Script de PRUEBA: cadencia de 1 minuto para validar la pipeline modular
+sin esperar 58 min. Reutiliza toda la logica de bot/engine.py.
 
 Uso:
     python ml_rsi_pro_test.py          # bucle: 1 analisis por minuto
@@ -14,7 +14,8 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from ml_rsi_pro import CONFIG, run_analysis, CYAN, RESET  # noqa: E402
+from bot.config import CONFIG, CYAN, RESET  # noqa: E402
+from bot.engine import run_analysis  # noqa: E402
 
 TEST = dict(CONFIG, sleep_after=15, sleep_retry=15, sleep_poll=1)
 

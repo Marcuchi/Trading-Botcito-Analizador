@@ -16,12 +16,13 @@ import requests
 
 TELEGRAM_API = "https://api.telegram.org/bot{token}/sendMessage"
 
+ENV_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+
 
 def _load_env():
-    """Carga credenciales desde .env (local) sin pisar variables ya definidas."""
+    """Carga credenciales desde el .env del proyecto (sin pisar variables definidas)."""
     try:
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"),
-                  encoding="utf-8") as f:
+        with open(ENV_FILE, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith("#") and "=" in line:

@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from ml_rsi_pro import run_analysis  # noqa: E402
+from bot.engine import run_analysis  # noqa: E402
 
 if __name__ == "__main__":
     try:

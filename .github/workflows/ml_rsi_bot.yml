@@ -36,7 +36,7 @@ jobs:
 
       - name: Mensaje de prueba a Telegram
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.test_telegram == 'true'
-        run: python send_test.py
+        run: python scripts/send_test.py
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
