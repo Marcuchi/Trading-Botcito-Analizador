@@ -78,15 +78,6 @@ CONDICIONES = [
         acciones=["telegram_informe"],
         activo=False,
     ),
-    dict(
-        nombre="RSI 14: divergencia alcista",
-        tipo="igual",
-        indicador="rsi14",
-        campo="bull_div",
-        valor=True,
-        acciones=["telegram_informe"],
-        activo=False,
-    ),
 ]
 
 # ------- Colores ANSI -------
