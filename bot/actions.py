@@ -6,6 +6,7 @@ definir la funcion y registrarla en ACCIONES.
 """
 
 from . import notify
+from .config import CONFIG
 
 
 def telegram_transicion(indicadores, condicion, actual, previo):
@@ -34,9 +35,45 @@ def imprimir(indicadores, condicion, actual, previo):
     print(ind.mensaje(r))
 
 
+def informe_completo(indicadores, actual):
+    """Arma UN mensaje con todos los indicadores sobre la misma barra y plataforma."""
+    titulos = {
+        "ml_rsi": "ML RSI",
+        "rsi14": "RSI 14",
+        "rsi_fractal": "RSI Fractal Energy",
+        "adx": "ADX",
+    }
+    sep = "-------"
+    barra = next(
+        (r.get("barra") for r in actual.values() if isinstance(r, dict) and "barra" in r),
+        None,
+    )
+    lines = [f"Datos : {CONFIG['tv_symbol']} / {CONFIG['timeframe']}"]
+    if barra:
+        lines.append(f"Barra : {barra}")
+    for nombre, ind in indicadores.items():
+        r = actual.get(nombre)
+        if not r:
+            continue
+        cuerpo = ind.mensaje(r).split("\n")
+        if len(cuerpo) > 1:
+            cuerpo = cuerpo[1:]  # quita el encabezado propio de cada indicador
+        lines.append(sep)
+        lines.append(f"{titulos.get(nombre, ind.nombre)}:")
+        lines.extend(cuerpo)
+    return "\n".join(lines)
+
+
+def telegram_informe_completo(indicadores, condicion, actual, previo):
+    """Notifica por Telegram un unico mensaje con todos los indicadores juntos."""
+    if notify.send_telegram(informe_completo(indicadores, actual)):
+        print("[TELEGRAM] Informe completo enviado")
+
+
 ACCIONES = {
     "telegram_transicion": telegram_transicion,
     "telegram_informe": telegram_informe,
+    "telegram_informe_completo": telegram_informe_completo,
     "print": imprimir,
 }
 

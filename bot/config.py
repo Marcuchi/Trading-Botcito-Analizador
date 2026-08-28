@@ -30,7 +30,7 @@ CONFIG = dict(
 )
 
 # Indicadores que se calculan en cada ejecucion (cada uno en bot/indicators/<nombre>.py).
-INDICADORES = ["ml_rsi", "rsi14"]
+INDICADORES = ["ml_rsi", "rsi14", "rsi_fractal", "adx"]
 
 # Condiciones declarativas. Tipos soportados:
 #   cambio_estado : se cumple si el valor del campo cambio entre la ejecucion
@@ -48,7 +48,7 @@ CONDICIONES = [
         campo="estado",
         desde=None,  # None = se dispara ante cualquier cambio
         hacia=("Verde", "Gris", "Rojo"),
-        acciones=["telegram_transicion", "telegram_informe"],
+        acciones=["telegram_informe_completo"],
         activo=True,
     ),
     dict(
@@ -77,6 +77,26 @@ CONDICIONES = [
         valor=70.0,
         acciones=["telegram_informe"],
         activo=False,
+    ),
+    dict(
+        nombre="Cambio de energia (RSI Fractal)",
+        tipo="cambio_estado",
+        indicador="rsi_fractal",
+        campo="estado",
+        desde=None,
+        hacia=("Movimiento con Energia", "Sin Energia"),
+        acciones=["telegram_informe_completo"],
+        activo=True,
+    ),
+    dict(
+        nombre="Cambio de senal ADX",
+        tipo="cambio_estado",
+        indicador="adx",
+        campo="estado",
+        desde=None,
+        hacia=("No entrar", "Ejecutar Entrada", "Alta volatilidad, Posible regresion, Stop Loss/ Salir"),
+        acciones=["telegram_informe_completo"],
+        activo=True,
     ),
 ]
 

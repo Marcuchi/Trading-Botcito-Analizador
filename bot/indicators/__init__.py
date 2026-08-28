@@ -7,12 +7,16 @@ Para agregar un indicador nuevo:
 """
 
 from .base import Indicador
+from .adx import ADX
 from .ml_rsi import MLRSI
 from .rsi14 import RSI14
+from .rsi_fractal import RSIFractalEnergy
 
 REGISTRO = {
     "ml_rsi": MLRSI,
     "rsi14": RSI14,
+    "rsi_fractal": RSIFractalEnergy,
+    "adx": ADX,
 }
 
 

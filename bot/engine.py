@@ -86,6 +86,9 @@ def engine():
 
 if __name__ == "__main__":
     try:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8")
+            sys.stderr.reconfigure(encoding="utf-8")
         engine()
     except KeyboardInterrupt:
         print("\n[INFO] Motor detenido por el usuario.")

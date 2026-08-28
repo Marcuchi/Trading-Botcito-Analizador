@@ -3,6 +3,10 @@
 import os
 import sys
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from bot.engine import run_analysis  # noqa: E402
