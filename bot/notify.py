@@ -34,7 +34,8 @@ def _load_env():
 
 def send_telegram(message):
     """Envia un mensaje de texto a uno o varios chats. Retorna True si todos se enviaron.
-    TELEGRAM_CHAT_ID acepta varios ids separados por coma o punto y coma."""
+    TELEGRAM_CHAT_ID acepta varios ids separados por coma o punto y coma.
+    Los mensajes se envian con formato HTML <pre> para monospace en Telegram."""
     _load_env()
     token = os.getenv("TELEGRAM_TOKEN", "").strip()
     raw = os.getenv("TELEGRAM_CHAT_ID", "").strip()
@@ -42,12 +43,13 @@ def send_telegram(message):
     if not token or not chat_ids:
         print("[TELEGRAM] Faltan TELEGRAM_TOKEN y TELEGRAM_CHAT_ID (variables o .env).")
         return False
+    formatted = f"<pre>{message}</pre>"
     ok = True
     for chat_id in chat_ids:
         try:
             resp = requests.post(
                 TELEGRAM_API.format(token=token),
-                json={"chat_id": chat_id, "text": message},
+                json={"chat_id": chat_id, "text": formatted, "parse_mode": "HTML"},
                 timeout=15,
             )
             resp.raise_for_status()
